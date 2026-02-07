@@ -1,0 +1,16 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "pdf2ppt",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-02-05",
+	"compatibility_flags": [
+    "nodejs_compat",
+  ],
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "pdf2ppt",
+			"database_id": "9a8861ec-d8bd-43d2-8dcf-f43416283768"
+		}
+	]
+}

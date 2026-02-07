@@ -2,7 +2,11 @@
   "name": "pdf2ppt",
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
+    "dev:frontend": "vite",
+    "dev:backend": "wrangler dev",
+
+    "preview": "npm run build && wrangler dev",
+
     "build": "vite build",
     "deploy": "npm run build && wrangler deploy"
   },

@@ -42,9 +42,36 @@ app.on(["POST", "GET"], "/api/auth/**", (c) => {
 
 // 各APIルートのマウント
 const routes = app
-  .get("/", (c) => c.text("Hono Server is running!"))
   .route("/api/settings", settingsRoute)
-  .route("/api/analyze", analyzeRoute);
+  .route("/api/analyze", analyzeRoute)
+  .get("*", async (c, next) => {
+    // 1. APIへのアクセスなら何もしない（次の処理へ）
+    if (c.req.path.startsWith("/api/")) {
+      return next();
+    }
+
+    // 2. Cloudflareの ASSETS バインディングを使ってファイルを探す
+    // @ts-ignore (型定義がない場合のエラー回避)
+    const assets = c.env.ASSETS;
+    
+    if (assets) {
+      // リクエストされたファイルをそのまま探す (例: /style.css)
+      const res = await assets.fetch(c.req.raw);
+      
+      // 見つかればそれを返す (200 OK)
+      if (res.status < 400) {
+        return res;
+      }
+
+      // 3. 見つからなければ index.html を返す (SPAの画面遷移対応)
+      // どんなURLで来ても、Reactのトップページ(index.html)を返してあげる
+      const indexUrl = new URL("/index.html", c.req.url);
+      const indexRes = await assets.fetch(new Request(indexUrl, c.req.raw));
+      return indexRes;
+    }
+
+    return next();
+  });
 
 export default app;
 export type AppType = typeof routes;

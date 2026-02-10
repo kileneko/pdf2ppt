@@ -1,5 +1,4 @@
 import { Hono } from "hono";
-import { serveStatic } from "hono/cloudflare-workers";
 import { cors } from "hono/cors";
 import { auth } from "@/auth";
 import { Bindings } from "@/bindings";
@@ -47,8 +46,39 @@ const routes = app
   .route("/api/settings", settingsRoute)
   .route("/api/analyze", analyzeRoute)
   .route("/api/admin", adminRoute)
-  .get("/*", serveStatic({ root: "./", manifest: {} }))
-  .get("*", serveStatic({ path: "./index.html", manifest: {} }));
+  .get("/*", async (c, next) => {
+    if (c.req.path.startsWith("/api/")) {
+      return next();
+    }
+
+    // @ts-ignore: 型定義がない場合のエラー回避
+    const assets = c.env.ASSETS;
+
+    if (!assets) {
+      // ローカル開発環境などでASSETSがない場合
+      return next();
+    }
+
+    // リクエストされたファイルをそのまま探す (例: /style.css)
+    let res = await assets.fetch(c.req.raw);
+
+    // 見つかればそれを返す (200 OK)
+    if (res.status < 400) {
+      return res;
+    }
+
+    // 404かつ、ファイル拡張子がない（=画面遷移）なら index.html を返す (SPA対応)
+    if (res.status === 404 && !c.req.path.includes(".")) {
+      const url = new URL(c.req.url);
+      url.pathname = "/index.html";
+      // index.html を取りに行く
+      res = await assets.fetch(new Request(url, c.req.raw));
+      return res;
+    }
+
+    // それでもなければ 404
+    return next();
+  });
 
 export default app;
 export type AppType = typeof routes;

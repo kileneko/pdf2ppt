@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { Bindings } from "@/bindings";
 import { settingsRoute } from "@/routes/settings";
 import { analyzeRoute } from "@/routes/analyze";
+import adminRoute from "@/routes/admin";
 
 const app = new Hono<{ Bindings: Bindings }>();
 
@@ -44,6 +45,7 @@ app.on(["POST", "GET"], "/api/auth/**", (c) => {
 const routes = app
   .route("/api/settings", settingsRoute)
   .route("/api/analyze", analyzeRoute)
+  .route("/api/admin", adminRoute)
   .get("*", async (c, next) => {
     // 1. APIへのアクセスなら何もしない（次の処理へ）
     if (c.req.path.startsWith("/api/")) {

@@ -54,3 +54,9 @@ export const userSecrets = sqliteTable("user_secret", {
     encryptedGeminiKey: text("encrypted_gemini_key").notNull(), // 暗号化したキー
     createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
 });
+
+// --- ログイン可能なユーザーを管理するテーブル ---
+export const allowedUsers = sqliteTable("allowed_users", {
+  email: text("email").primaryKey(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+});
